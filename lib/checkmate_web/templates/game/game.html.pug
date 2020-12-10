@@ -1,0 +1,17 @@
+h1  Game
+
+.board
+  = for rank <- 8..1 do
+    .rank
+      = for file <- [:a, :b, :c, :d, :e, :f, :g, :h] do
+        .file(
+          id=file_id(rank, file)
+          phx-click="move"
+          phx-value-piece=piece_id(@board, rank, file))
+          = if not is_nil(board_piece(@board, rank, file)) do
+            .piece(
+              id=piece_id(@board, rank, file)
+              phx-click="move"
+              phx-value-piece=piece_id(@board, rank, file)
+              class=selected_class(@selected, piece_id(@board, rank, file))
+              )= board_piece(@board, rank, file) |> piece_display()

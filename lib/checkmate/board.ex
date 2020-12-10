@@ -1,57 +1,145 @@
 defmodule Checkmate.Board do
-  defstruct [
-    :a1, :a2, :a3, :a4, :a5, :a6, :a7, :a8,
-    :b1, :b2, :b3, :b4, :b5, :b6, :b7, :b8,
-    :c1, :c2, :c3, :c4, :c5, :c6, :c7, :c8,
-    :d1, :d2, :d3, :d4, :d5, :d6, :d7, :d8,
-    :e1, :e2, :e3, :e4, :e5, :e6, :e7, :e8,
-    :f1, :f2, :f3, :f4, :f5, :f6, :f7, :f8,
-    :g1, :g2, :g3, :g4, :g5, :g6, :g7, :g8,
-    :h1, :h2, :h3, :h4, :h5, :h6, :h7, :h8
-  ]
+  defstruct [ :pieces ]
 
   def init do
     %__MODULE__{
-      a1: "wr", a2: "wp", a3: nil, a4: nil, a5: nil, a6: nil, a7: "bp", a8: "br",
-      b1: "wn", b2: "wp", b3: nil, b4: nil, b5: nil, b6: nil, b7: "bp", b8: "bn",
-      c1: "wb", c2: "wp", c3: nil, c4: nil, c5: nil, c6: nil, c7: "bp", c8: "bb",
-      d1: "wq", d2: "wp", d3: nil, d4: nil, d5: nil, d6: nil, d7: "bp", d8: "bq",
-      e1: "wk", e2: "wp", e3: nil, e4: nil, e5: nil, e6: nil, e7: "bp", e8: "bk",
-      f1: "wb", f2: "wp", f3: nil, f4: nil, f5: nil, f6: nil, f7: "bp", f8: "bb",
-      g1: "wn", g2: "wp", g3: nil, g4: nil, g5: nil, g6: nil, g7: "bp", g8: "bn",
-      h1: "wr", h2: "wp", h3: nil, h4: nil, h5: nil, h6: nil, h7: "bp", h8: "br"
+      pieces: [
+        "wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr",
+        "wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp",
+        nil, nil, nil, nil, nil, nil, nil, nil,
+        nil, nil, nil, nil, nil, nil, nil, nil,
+        nil, nil, nil, nil, nil, nil, nil, nil,
+        nil, nil, nil, nil, nil, nil, nil, nil,
+        "bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp",
+        "br", "bn", "bb", "bq", "bk", "bb", "bn", "br"
+      ]
     }
   end
 
-  def move(%__MODULE__{} = board, square_piece_one, square_piece_two) do
-    [square_one, piece_one] = String.split(square_piece_one, ":")
-    [square_two, piece_two] = String.split(square_piece_two, ":")
+  def update_board(board, square_one, piece_one, square_two) do
+    %{
+      board |
+      pieces:
+        board.pieces
+        |> List.update_at(square_one, fn _ -> nil end)
+        |> List.update_at(square_two, fn _ -> piece_one end)
+    }
+  end
 
-    case Map.get(board, square_two |> String.to_existing_atom()) do
-      nil -> update_board(board, square_one, piece_one, square_two)
+  def move(%__MODULE__{} = board, square_one, piece_one, square_two, piece_two) do
+    case can_move?(board, square_one, piece_one, square_two, piece_two) do
+      true -> update_board(board, square_one, piece_one, square_two)
 
-      piece ->
-        case can_take_piece(piece_one, piece) do
-          true -> update_board(board, square_one, piece_one, square_two)
-
-          false -> board
-        end
+      false -> board
     end
   end
 
-  def can_take_piece(piece_one, piece_two), do: true
+  def can_move?(board, square_one, "w" <> _rest, square_two, "w" <> _), do: false
 
-  def update_board(board, square_one, piece_one, square_two) do
-    board
-    |> Map.put(
-      square_one
-      |> String.to_existing_atom(),
-      nil
+  def can_move?(board, square_one, "b" <> _rest, square_two, "b" <> _), do: false
+
+  def can_move?(board, square_one, "wp", square_two, nil) do
+    (
+      div(square_one, 8) == 1
+      && (
+        square_two - square_one == 8
+        || square_two - square_one == 16
+      )
     )
-    |> Map.put(
-      square_two
-      |> String.to_existing_atom(),
-      piece_one
+    || square_two - square_one == 8
+  end
+
+  def can_move?(board, square_one, "bp", square_two, nil) do
+    (
+      div(square_one, 8) == 6
+      && (
+        square_one - square_two == 8
+        || square_one - square_two == 16
+      )
+    )
+    || square_one - square_two == 8
+  end
+
+  def can_move?(board, square_one, "wp", square_two, _) do
+    square_two - square_one == 7
+    || square_two - square_one == 9
+  end
+
+  def can_move?(board, square_one, "bp", square_two, _) do
+    square_one - square_two == 7
+    || square_one - square_two == 9
+  end
+
+  def can_move?(board, square_one, "wr", square_two, _),
+    do: can_move_rook?(board, square_one, square_two)
+
+  def can_move?(board, square_one, "br", square_two, _),
+    do: can_move_rook?(board, square_one, square_two)
+
+  def can_move_rook?(board, square_one, square_two) do
+    (
+      same_rank?(square_one, square_two)
+      || same_file?(square_one, square_two)
+    ) && no_piece_in_line?(board, square_one, square_two)
+  end
+
+  def can_move?(board, square_one, piece_one, square_two, piece_two), do: false
+
+  def same_rank?(square_one, square_two),
+    do: div(square_two, 8) == div(square_one, 8)
+
+  def same_file?(square_one, square_two),
+    do: rem(abs(square_two - square_one), 8) == 0
+
+  def no_piece_in_line?(board, square_one, square_two) do
+    (abs(square_one - square_two) == 1)
+    || (abs(square_one - square_two) == 8)
+    || (
+      case same_rank?(square_one, square_two) do
+        true ->
+          case square_one > square_two do
+            true -> (square_one - 1)..(square_two + 1)
+
+            false -> (square_one + 1)..(square_two - 1)
+          end
+          |> Enum.all?(fn n ->
+            board.pieces
+            |> Enum.at(n)
+            |> case do
+              nil -> true
+
+              _ -> false
+            end
+          end)
+
+        false ->
+          case square_one > square_two do
+            true ->
+              board
+              |> file_has_piece?(square_one, square_two, tiles_away(:below))
+
+            false ->
+              board
+              |> file_has_piece?(square_one, square_two, tiles_away(:above))
+          end
+      end
     )
   end
+
+  def file_has_piece?(board, square_one, square_two, fun) do
+    0..(div(abs(square_one - square_two), 8) - 2)
+    |> Enum.all?(fn n ->
+      board.pieces
+      |> Enum.at(fun.(square_one, n))
+      |> case do
+        nil -> true
+
+        _ -> false
+      end
+    end)
+  end
+
+  def tiles_away(:below), do: fn s, n -> s - (8 * (n + 1)) end
+
+  def tiles_away(:above), do: fn s, n -> s + (8 * (n + 1)) end
 end

@@ -1,17 +1,19 @@
 h1  Game
 
 .board
-  = for rank <- 8..1 do
+  = for rank <- 7..0 do
     .rank
-      = for file <- [:a, :b, :c, :d, :e, :f, :g, :h] do
+      = for file <- 1..8 do
         .file(
           id=file_id(rank, file)
           phx-click="move"
-          phx-value-piece=piece_id(@board, rank, file))
-          = if not is_nil(board_piece(@board, rank, file)) do
+          phx-value-square=file_id(rank, file)
+          phx-value-piece=Enum.at(@board.pieces, piece_position(rank, file)))
+          = if not is_nil(Enum.at(@board.pieces, piece_position(rank, file))) do
             .piece(
               id=piece_id(@board, rank, file)
               phx-click="move"
-              phx-value-piece=piece_id(@board, rank, file)
-              class=selected_class(@selected, piece_id(@board, rank, file))
-              )= board_piece(@board, rank, file) |> piece_display()
+              phx-value-square=file_id(rank, file)
+              phx-value-piece=Enum.at(@board.pieces, piece_position(rank, file))
+              class=selected_class(@selected, piece_position(rank, file))
+              )= board_piece(@board, piece_position(rank, file)) |> piece_display()

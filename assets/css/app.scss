@@ -2,11 +2,18 @@
 @import "./phoenix.css";
 @import "../node_modules/nprogress/nprogress.css";
 
+.board {
+  width: fit-content;
+  max-width: 800px;
+}
+
 .board .rank .file {
   background: white;
   display: inline-block;
-  width: 100px;
-  height: 100px;
+  width: 9vw;
+  max-width: 100px;
+  height: 9vw;
+  max-height: 100px;
   text-align: center;
   vertical-align: top;
 }
@@ -21,9 +28,11 @@
 
 .piece {
   display: block;
-  width: 100px;
-  height: 100px;
-  font-size: 65px;
+  width: 9vw;
+  max-width: 100px;
+  height: 9vw;
+  max-height: 100px;
+  font-size: 6vw;
   user-select: none;
   background: transparent;
 }
@@ -40,6 +49,12 @@
   position: absolute;
   z-index: 1000;
   font-size: 65px;
+}
+
+@media screen and (min-width: 1100px) {
+  .piece {
+    font-size: 65px;
+  }
 }
 
 /* LiveView specific classes for your customizations */
@@ -129,3 +144,4 @@
   display: block;
   margin: -1rem 0 2rem;
 }
+

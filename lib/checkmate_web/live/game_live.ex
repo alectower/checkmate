@@ -13,20 +13,47 @@ defmodule CheckmateWeb.GameLive do
     do: GameView.render("game_live.html", assigns)
 
   @impl true
-  def handle_event("move", %{"piece" => square_piece} = params, %{assigns: %{selected: selected, board: board}} = socket) do
-    IO.inspect params
-    [square, piece] = String.split(square_piece, ":")
-
+  def handle_event("move", %{"square" => square, "piece" => piece} = params, %{assigns: %{selected: selected, board: board}} = socket) do
     case is_nil(selected) do
-      true -> {:noreply, assign(socket, selected: square_piece)}
+      true -> {:noreply, assign(socket, selected: String.to_integer(square))}
 
       false ->
         {
           :noreply,
-          assign(
-            socket,
-            board: Board.move(board, selected, square_piece),
-            selected: nil
+          socket
+          |> assign(
+            selected: nil,
+            board:
+              board
+              |> Board.move(
+                selected,
+                Enum.at(board.pieces, selected),
+                String.to_integer(square),
+                Enum.at(board.pieces, String.to_integer(square))
+              )
+          )
+        }
+    end
+  end
+
+  def handle_event("move", %{"square" => square} = params, %{assigns: %{selected: selected, board: board}} = socket) do
+    case is_nil(selected) do
+      true -> {:noreply, assign(socket, selected: nil)}
+
+      false ->
+        {
+          :noreply,
+          socket
+          |> assign(
+            selected: nil,
+            board:
+              board
+              |> Board.move(
+                selected,
+                Enum.at(board.pieces, selected),
+                String.to_integer(square),
+                Enum.at(board.pieces, String.to_integer(square))
+              )
           )
         }
     end

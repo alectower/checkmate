@@ -36,6 +36,7 @@ defmodule CheckmateWeb.GameLive do
     end
   end
 
+  @impl true
   def handle_event("move", %{"square" => square} = params, %{assigns: %{selected: selected, board: board}} = socket) do
     case is_nil(selected) do
       true -> {:noreply, assign(socket, selected: nil)}

@@ -1,6 +1,8 @@
 defmodule CheckmateWeb.GameView do
   use CheckmateWeb, :view
 
+  alias Checkmate.Board
+
   def piece_display("wp"), do: "♙"
   def piece_display("wr"), do: "♖"
   def piece_display("wn"), do: "♘"
@@ -40,5 +42,41 @@ defmodule CheckmateWeb.GameView do
 
       false -> ""
     end
+  end
+
+  def move_notation(square_one, piece_one, square_two, piece_two) do
+    piece_notation(piece_one)
+    <> number_to_square(square_one)
+    <> (
+      case piece_two do
+        nil -> "-"
+
+        _ -> "x"
+      end
+    )
+    <> number_to_square(square_two)
+  end
+
+  def piece_notation("wp"), do: ""
+
+  def piece_notation("bp"), do: ""
+
+  def piece_notation(piece) do
+    String.at(piece, 1)
+    |> String.capitalize()
+  end
+
+  def number_to_square(num) do
+    case rem(num, 8) do
+      0 -> "a"
+      1 -> "b"
+      2 -> "c"
+      3 -> "d"
+      4 -> "e"
+      5 -> "f"
+      6 -> "g"
+      7 -> "h"
+    end
+    <> Integer.to_string(div(num, 8) + 1)
   end
 end

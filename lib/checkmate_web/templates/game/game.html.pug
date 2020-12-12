@@ -1,4 +1,4 @@
-h1  Game
+h1  Checkmate
 
 .board
   = for rank <- 7..0 do
@@ -17,3 +17,23 @@ h1  Game
               phx-value-piece=Enum.at(@board.pieces, piece_position(rank, file))
               class=selected_class(@selected, piece_position(rank, file))
               )= board_piece(@board, piece_position(rank, file)) |> piece_display()
+
+.moves
+  | Turn:
+  = @turn |> to_string() |> String.capitalize()
+  = if @check do
+    = if Board.checkmate?(@board, @turn |> to_string() |> String.at(0)) do
+      br
+      | Checkmate!
+    - else
+      br
+      | Check!
+  - else
+    br
+  br
+  br
+
+  = for {[white, black], index} <- Enum.chunk_every(@moves, 2) |> Enum.with_index() do
+    .move
+      = "#{index + 1}."
+      = "#{white}, #{black}"
